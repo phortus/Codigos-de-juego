@@ -1,83 +1,64 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-   public float speed= 5f;
     Rigidbody2D rb;
-    public Vector2 myPsoition;
-    Animator anim;
-    Vector2 lookDirection = new Vector2(1, 0);
+    float speed = 5.0f;
+    float jump = 10f;
+    public Animator anim, animS;
+    public int health = 3;
+    internal static object position;
 
-    int maxHelth = 5;
-    int currentHealt;
-    bool isInvencible;
-    float invencibleTimer;
-    public GameObject bull;
 
     // Start is called before the first frame update
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        currentHealt = maxHelth;
-        Debug.Log("La vida actual de ruby es: ");
-        //anim = GetComponent<Animator>();
+        anim = GetComponentInChildren<Animator>();
+        animS = transform.GetChild(1).GetComponent<Animator>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        Move();
+        Atack();
 
-       myPsoition = new Vector2(horizontal, vertical) ;
-       transform.position += myPsoition;
+    }
+    private void Move()
+    {
+        float moveHorizontal = Input.GetAxis("Horizontal");
 
-        if (horizontal == 0 || vertical == 0)
+        if (moveHorizontal > 0) transform.localScale = new Vector2(1, 1);
+        if (moveHorizontal < 0) transform.localScale = new Vector2(-1, 1);
+        //jump
+        if (Input.GetKeyDown(KeyCode.Space) && rb.velocity.y == 0)
         {
-            lookDirection.x = horizontal;
-            lookDirection.y = vertical;
-            lookDirection.Normalize();
-
+            //rb.AddForce..
+            rb.velocity = new Vector2(rb.velocity.x, jump);
+            anim.SetTrigger("Jump");
         }
-        anim.SetFloat("Look X", horizontal);
-        anim.SetFloat("Look Y", vertical);
-        anim.SetFloat("Speed", lookDirection.magnitude);
-        if (isInvencible) 
+        rb.velocity = new Vector2(moveHorizontal * speed, rb.velocity.y);
+        anim.SetFloat("Move", Mathf.Abs(moveHorizontal));
+    }
+    private void Atack()
+    {
+        if (Input.GetMouseButtonDown(0))
         {
-            invencibleTimer = invincibleTimer.deltaTime;
-            if(isInvencibleTimer < 0)
-            {
-                isInvencible = false;
-            }
+            anim.SetTrigger("atack");
         }
-        if (Input.GetKeyDown(KeCode.Space))
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        collision.SendMessage("Damage");
+        if (collision.gameObject.tag == "enemy") 
         { 
-           GameObject projectile Instantiate(bull, rb.position, new Vector2(0, 0.5f), Quaternion.identity);
-            projectile.getComponent<Rigidbody2D>().AddFoce(lookDirection*15, 300);
-            anim.SetTrigger("Launch");
-
+            Destroy(gameObject);
         }
     }
-    private void FixedUpdate()
-    {
-        rb.MovePosition(rb.position + myPsoition * speed * Time.deltaTime);
-    }
-    void changeHealth(int amount) 
-    {
-        if(amount < 0)
-           {
-            if (isInvencible)
-            {
-                return;
-            }
-            isInvencible = true;
-            invencibleTimer = 1.5f;
 
-           }
-        currentHealt += Mathf.Clamp(currentHealt+amount, 0, maxHelth);
-        Debug.Log("La vida actual de ruby es: " + currentHealt);
-        
-    }
 }
