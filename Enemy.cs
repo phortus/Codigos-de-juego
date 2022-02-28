@@ -4,48 +4,37 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public class fantasma : MonoBehaviour
+    private Animator anim;
+    private Transform target;
+
+     public float speed;
+    private float range;
+    
+    public float maxRange;
+    public float minRange;
+    // Start is called before the first frame update
+    void Start()
     {
-        private Animator anim;
-        private Transform target;
+        anim = GetComponent<Animator>();
+        target = FindObjectOfType<Player>().transform;
+    }
 
-        public float speed;
-        private float range;
-
-        public float maxRange;
-        public float minRange;
-        // Start is called before the first frame update
-        void Start()
+    // Update is called once per frame
+    void Update()
+    {
+        if (Vector3.Distance(target.position, transform.position) <= maxRange && Vector3.Distance(target.position, transform.position) >= minRange)
         {
-            anim = GetComponent<Animator>();
-            target = FindObjectOfType<Player>().transform;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if (Vector3.Distance(target.position, transform.position) <= maxRange && Vector3.Distance(target.position, transform.position) >= minRange)
-            {
-                FollowPlayer();
-            }
-        }
-
-        public void FollowPlayer()
-        {
-            if (transform.position.x < target.transform.position.x)
-            {
-
-                transform.rotation = Quaternion.Euler(0, 0, 0);
-                transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed * Time.deltaTime);
-            }
-            else
-            {
-
-                transform.rotation = Quaternion.Euler(0, 180, 0);
-                transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed * Time.deltaTime);
-            }
-
-
+            FollowPlayer();
         }
     }
+
+    public void FollowPlayer()
+    {
+        anim.SetBool("isMove", true);
+        anim.SetFloat("LookX", (target.position.x - transform.position.x));
+        anim.SetFloat("LookY", (target.position.y - transform.position.y));
+        transform.position = Vector3.MoveTowards(transform.position, target.transform.position, speed * Time.deltaTime);
+
+
     }
+}
